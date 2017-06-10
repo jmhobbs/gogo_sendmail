@@ -27,9 +27,9 @@ func main() {
 	// TODO: What to print?
 	flag.BoolVar(&opts.verbose, "v", false, "Verbose mode - shows the conversation with the SMTP server.")
 	flag.StringVar(&opts.from, "f", "", "Sets the name of the \"from\" person (i.e. the sender of the mail).")
-	flag.BoolVar(&opts.extract_recipients, "t", false, "Read message for recipients.\nTo:, Cc:, and Bcc: lines will be scanned for recipient addresses.\nThe Bcc: line will be deleted before transmission.")
-	flag.StringVar(&opts.server, "s", "localhost", "Specifies the SMTP server to use.\nWithout this it uses localhost.")
-	flag.IntVar(&opts.port, "p", 25, "Specifies the port to use.\nWithout this it uses 25, the standard SMTP port.")
+	flag.BoolVar(&opts.extract_recipients, "t", false, "Read message for recipients.  To:, Cc:, and Bcc: lines will be scanned for recipient addresses.  The Bcc: line will be deleted before transmission.")
+	flag.StringVar(&opts.server, "s", "localhost", "Specifies the SMTP server to use.  Without this it uses localhost.")
+	flag.IntVar(&opts.port, "p", 25, "Specifies the port to use.  Without this it uses 25, the standard SMTP port.")
 	// TODO: Handle timeouts
 	flag.IntVar(&opts.timeout, "T", 60, "Specifies timeout - defaults to one minute.")
 	flag.Parse()
