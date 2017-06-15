@@ -22,7 +22,7 @@ type options struct {
 	timeout            int
 }
 
-func main() {
+func getOptions() (options, []string) {
 	opts := options{}
 	// TODO: What to print?
 	flag.BoolVar(&opts.verbose, "v", false, "Verbose mode - shows the conversation with the SMTP server.")
@@ -34,35 +34,25 @@ func main() {
 	flag.IntVar(&opts.timeout, "T", 60, "Specifies timeout - defaults to one minute.")
 	flag.Parse()
 
-	recipients := flag.Args()
+	return opts, flag.Args()
+}
 
-	// Default to <user>@<hostname> if no From provided
-	// mini_sendmail.c L177
-	if opts.from == "" {
-		user, err := user.Current()
-		if err != nil {
-			log.Fatal(err)
-		}
-		opts.from = user.Username
-	}
+func main() {
+	opts, recipients := getOptions()
 
-	if !strings.Contains(opts.from, "@") {
-		hostname, err := os.Hostname()
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		opts.from = fmt.Sprintf("%s@%s", opts.from, hostname)
+	from, err := getFrom(opts)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	headers, body := readEmail(os.Stdin)
 
 	if opts.extract_recipients {
 		var err error
-		// TODO: Merge with command line recipients?
+		// TODO: Should this merge with command line recipients, or overwrite?
 		recipients, err = extractRecipients(strings.Join(append(headers, "", "Body"), "\r\n"))
 		if err != nil {
-			log.Fatalf("extracting recipients: %s\n", err)
+			log.Fatal(err)
 		}
 
 		// Strip Bcc
@@ -75,12 +65,40 @@ func main() {
 		}
 	}
 
-	err := smtp.SendMail(fmt.Sprintf("%s:%d", opts.server, opts.port), nil, opts.from, recipients, []byte(strings.Join(append(headers, body...), "\r\n")))
+	err = smtp.SendMail(fmt.Sprintf("%s:%d", opts.server, opts.port), nil, from, recipients, []byte(strings.Join(append(headers, body...), "\r\n")))
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
+// Get's the From address, either from options or from
+// environment, and normalizes it.
+func getFrom(opts options) (string, error) {
+	from := opts.from
+
+	// Default to <user>@<hostname> if no From provided
+	// mini_sendmail.c L177
+	if from == "" {
+		user, err := user.Current()
+		if err != nil {
+			return "", err
+		}
+		from = user.Username
+	}
+
+	if !strings.Contains(from, "@") {
+		hostname, err := os.Hostname()
+		if err != nil {
+			return "", err
+		}
+
+		from = fmt.Sprintf("%s@%s", from, hostname)
+	}
+
+	return from, nil
+}
+
+// Reads the email and separates headers from the body.
 func readEmail(src io.Reader) (headers, body []string) {
 	scanner := bufio.NewScanner(src)
 	for scanner.Scan() {
@@ -98,6 +116,8 @@ func readEmail(src io.Reader) (headers, body []string) {
 	return headers, body
 }
 
+// Reads headers and collects unique email addresses from
+// the 'To', 'Cc', and 'Bcc' headers.
 func extractRecipients(headers string) ([]string, error) {
 	r := strings.NewReader(headers)
 	m, err := mail.ReadMessage(r)
