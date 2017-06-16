@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jmhobbs/gogo_sendmail.svg?branch=master)](https://travis-ci.org/jmhobbs/gogo_sendmail)
+
 # GoGo Sendmail
 
 This is a golang clone of [mini_sendmail](http://acme.com/software/mini_sendmail/).
