@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/jmhobbs/gogo_sendmail.svg?branch=master)](https://travis-ci.org/jmhobbs/gogo_sendmail)
+[![codecov](https://codecov.io/gh/jmhobbs/gogo_sendmail/branch/master/graph/badge.svg)](https://codecov.io/gh/jmhobbs/gogo_sendmail)
 
 # GoGo Sendmail
 
